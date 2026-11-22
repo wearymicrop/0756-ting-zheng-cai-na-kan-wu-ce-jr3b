@@ -8,4 +8,7 @@ REASONS = {
     "ANCHOR_UNRESOLVED": "锚点尚有未解决的修订", "ANCHOR_CHANGED": "同一锚点的发言人或诉求变化",
     "BAD_DECISION": "采纳记录字段有误", "DECISION_CONFLICT": "同版采纳结论冲突", "DECISION_FORK": "意见有不同采纳结论",
     "DECISION_MISSING": "缺少适用采纳结论", "DECISION_ANCHOR": "采纳记录缺少对应段落", "CONTACT_MISSING": "缺少可用寄送地址",
+    "SIGNOFF_CONFLICT": "签核卷内采纳结论冲突", "SIGNOFF_MISSING": "签核卷缺少适用依据",
+    "SIGNOFF_DISPUTED": "签核卷仍有未归属来源", "SCOPE_OMITTED": "签核卷未采用并行末版",
+    "BAD_SCOPE": "签核采用范围有误", "REVISION_NOT_FOUND": "找不到该签核版本",
 }

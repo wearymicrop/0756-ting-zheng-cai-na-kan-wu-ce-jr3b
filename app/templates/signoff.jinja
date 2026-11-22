@@ -1,0 +1,17 @@
+{% from 'exhibits.jinja' import sources, status %}
+<div class="section-heading"><h2>采纳签核卷</h2><span>{{ current.label }} · {{ current.counts.opinions }} 份意见</span></div>
+<form class="signoff-scope" id="signoff-scope" data-run="{{ run_id or '' }}" data-sample="{{ sample }}">
+<fieldset><legend>本次采用的分支范围</legend>
+{% for tip in current.available_tips %}<label><input type="checkbox" name="scope" value="{{ tip }}" {% if tip in current.scope %}checked{% endif %}> {{ tip }}{% if tip == current.latest_tip %} <small>最新发布</small>{% endif %}</label>{% endfor %}
+</fieldset>
+<p class="hint">未纳入 {{ current.omitted_tips|join('、') or '—' }}。{% if current.omitted %}其中 {{ current.omitted|selectattr('divergent')|list|length }} 支与本案结论不同，需在缺失或冲突依据中列明。{% endif %}</p><button type="submit" id="signoff-commit" {% if not run_id %}disabled title="先归档案卷"{% endif %}>形成签核卷</button>
+<span id="signoff-state" role="status">{% if volume %}{{ volume.id }} · 第 {{ volume.revision }} 版 · {{ status(volume.status) }}{% elif run_id %}尚未签核{% else %}归档后可签核{% endif %}</span>
+</form>
+{% if volume %}<p class="hint"><a href="/api/runs/{{ run_id }}/signoff/{{ volume.id }}/export">下载签核卷</a> · <a href="/api/runs/{{ run_id }}/signoff/{{ volume.id }}/mailings">寄送结果</a> · <a href="/api/runs/{{ run_id }}/signoff/history">签核历史</a></p>{% endif %}
+<div class="scroll" id="signoff-table"><table><thead><tr><th>意见</th><th>发言人</th><th>签核结论</th><th>采用依据</th><th>缺失或冲突依据</th></tr></thead><tbody>
+{% for item in current['items'] %}<tr><td>{{ item.topic }}{% if item.status != 'complete' %}<br><small>{{ status(item.status) }}</small>{% endif %}</td><td>{{ item.speaker }} · {{ item.speaker_id }}</td><td>{{ status(item.conclusion) }}</td>
+<td>{% for cell in item.basis %}<div>{{ cell.anchor }} · {{ cell.tip }} · {{ status(cell.result) }}<small>依据 {{ cell.decision_version }}</small>{{ sources(cell.sources) }}</div>{% else %}—{% endfor %}</td>
+<td>{% for gap in item.missing %}<div>{{ gap.anchor }} · {{ gap.tip }} · {{ gap.reason }}{{ sources(gap.sources) }}</div>{% endfor %}{% for conflict in item.conflicts %}<div>{% if conflict.anchor %}{{ conflict.anchor }} · {% endif %}{% if conflict.kind == 'omitted' %}{{ conflict.tip }} 未采用 · {% endif %}{{ conflict.results|join(' / ') }}{{ sources(conflict.sources) }}</div>{% endfor %}{% if not item.missing and not item.conflicts %}—{% endif %}</td></tr>
+{% else %}<tr><td colspan="5">暂无可签核意见。</td></tr>{% endfor %}</tbody></table></div>
+{% if current.omitted %}<div class="coverage omitted"><h3>未采用分支的依据</h3>{% for row in current.omitted %}<details><summary>{{ row.tip }} · {% if row.divergent %}与本案结论不同 · {{ row.divergent|length }} 份{% else %}与本案结论一致{% endif %}</summary>{{ sources(row.sources) }}</details>{% endfor %}</div>{% endif %}
+<div class="coverage"><h3>来源覆盖</h3>{% for row in current.coverage %}<details><summary>行 {{ row.line }} · {{ status(row.category) }}</summary><pre>{{ row.source.raw|tojson(indent=2) }}</pre></details>{% endfor %}</div>

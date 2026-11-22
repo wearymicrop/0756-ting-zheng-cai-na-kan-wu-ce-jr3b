@@ -14,13 +14,14 @@
 | M4 修订链路 | 从原段追到文书末版 | `GET /api/revisions/{sample}` | `app/modules/m4_revisions/rules.py` | `tests/test_revisions.py` |
 | M5 意见归并 | 检视意见组的所有原始来源 | `GET /api/opinions/{sample}` | `app/modules/m5_opinions/rules.py` | `tests/test_opinions.py` |
 | M6 采纳核对 | 并列比对分支结论和来源总账 | `GET /api/adoption/{sample}` | `app/modules/m6_adoption/rules.py` | `tests/test_adoption.py` |
-| M7 勘误寄送 | 将可寄送和暂缓草案按收件人生成 | `GET /api/mailings/{sample}` | `app/modules/m7_mailings/rules.py` | `tests/test_mailings.py` |
+| M7 采纳签核 | 选定采用分支，形成可交或待补的签核卷 | `GET /api/signoff/{sample}` | `app/modules/m7_signoff/rules.py` | `tests/test_signoff.py` |
+| M8 勘误寄送 | 将可寄送和暂缓草案按收件人生成 | `GET /api/mailings/{sample}` | `app/modules/m8_mailings/rules.py` | `tests/test_mailings.py` |
 
 ## 陷阱登记
 
 | TRAP | 现象 | 朴素实现会怎样 | 本项目处理 | 处理位置 | 测试 |
 |---|---|---|---|---|---|
-| TRAP-07 | 脏样例：寄送地址是占位符 | 生成无效寄送单 | 地址校验失败后暂缓 | `app/modules/m7_mailings/rules.py` | `tests/test_mailings.py::test_missing_address_holds` |
+| TRAP-07 | 脏样例：寄送地址是占位符 | 生成无效寄送单 | 地址校验失败后暂缓 | `app/modules/m8_mailings/rules.py` | `tests/test_mailings.py::test_missing_address_holds` |
 | TRAP-11 | 干净样例：发布时间有时区偏移 | 按文字排序误判 | 按 UTC 时间核验 | `app/modules/m1_versions/rules.py` | `tests/test_versions.py::test_timestamps_by_instant` |
 | TRAP-13 | 干净样例：后版在输入靠前 | 误判找不到前版 | 按前版关系拓扑排序 | `app/modules/m1_versions/rules.py` | `tests/test_versions.py::test_out_of_order_versions` |
 | TRAP-14 | 脏样例：同版同锚点收到两道指令 | 写入顺序决定页码 | 隔离冲突并保留两条来源 | `app/modules/m2_anchors/rules.py` | `tests/test_anchors.py::test_duplicate_anchor_quarantined` |
@@ -28,6 +29,8 @@
 | TRAP-20 | 脏样例：修订互相指向 | 遍历不结束 | 找出环并隔离 | `app/modules/m1_versions/rules.py` | `tests/test_versions.py::test_cycle_isolated` |
 | TRAP-21 | 干净样例：指向缺失前版 | 误作首版投入核算 | 隔离断链版本 | `app/modules/m1_versions/rules.py` | `tests/test_versions.py::test_missing_parent` |
 | TRAP-22 | 干净样例：说话人使用登记别名 | 新增重复发言人 | 以已登记别名回溯编号 | `app/modules/m3_speakers/rules.py` | `tests/test_speakers.py::test_alias_resolution` |
+| TRAP-27 | 脏样例：并行末版给出不同采纳结论 | 只取最新一支直接下结论 | 按采用范围并列依据，漏采分支列为冲突 | `app/modules/m7_signoff/rules.py` | `tests/test_signoff.py::test_latest_only_lists_omitted_conflict` |
+| TRAP-28 | 签核中断或重跑同一批 | 覆盖旧卷或堆出重复记录 | 轮次追加、同批复用、可恢复旧版 | `app/store.py` | `tests/test_signoff_volume.py` |
 
 ## 对账规则
 
